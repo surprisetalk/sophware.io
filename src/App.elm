@@ -11,7 +11,7 @@ import Bulma.CDN as CDN exposing (..)
 
 import Bulma.Components as Components exposing (..)
 import Bulma.Elements as Elements exposing (..)
-import Bulma.Elements.Icon as Icon exposing ( icon, flask, code, smile_o, star_o, star, heart, cube, cogs, cubes, magic )
+import Bulma.Elements.Icon as Icon exposing ( icon, flask, code, smile_o, star_o, star, heart, cube, cogs, cubes, magic, wrench, users, envelope )
 -- import Bulma.Grid as Grid exposing (..)
 import Bulma.Helpers as Helpers exposing (..)
 import Bulma.Modifiers as Modifiers exposing (..)
@@ -220,7 +220,7 @@ view model
 hello : Html Msg
 hello
   = hero { heroModifiers | color = Primary, size = Layout.FullHeight, bold = False }
-    [ textCentered ]
+    [ textCentered, style [ "min-height" => "90vh" ] ]
     [ heroBody []
       [ container []
         [ title H1
@@ -239,10 +239,10 @@ hello
       [ tabs { tabsModifiers | size = Modifiers.Large } [ fullWidth ]
         [ container []
           [ ul []
-            [ tab False [] [ a [ href "#specialties" ] [ text "Specialties" ] ]
-            , tab False [] [ a [ href "#services"    ] [ text "Services"    ] ]
-            , tab False [] [ a [ href "#team"        ] [ text "Team"        ] ]
-            , tab False [] [ a [ href "#contact"     ] [ text "Contact"     ] ]
+            [ tab False [] [ a [ href "#specialties" ] [ icon Modifiers.Normal [] [ star     ], text "Specialties" ] ]
+            , tab False [] [ a [ href "#services"    ] [ icon Modifiers.Normal [] [ wrench   ], text "Services"    ] ]
+            , tab False [] [ a [ href "#team"        ] [ icon Modifiers.Normal [] [ users    ], text "Team"        ] ]
+            , tab False [] [ a [ href "#contact"     ] [ icon Modifiers.Normal [] [ envelope ], text "Contact"     ] ]
             ]
             -- TODO: icons
             -- TODO: the first three should be rolled-up into a dropdown called "specialties" or something
