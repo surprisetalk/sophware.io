@@ -4,7 +4,7 @@ module App exposing (..)
 
 -- IMPORTS ---------------------------------------------------------------------
 
-import Html exposing ( Html, Attribute, main_, text, div, p, a, wbr, hr, br, ul )
+import Html exposing ( Html, Attribute, main_, text, div, p, a, wbr, hr, br, ul, blockquote, em, strong, span )
 import Html.Attributes as Attr exposing ( id, class, style, href )
 
 import Bulma.CDN as CDN exposing (..)
@@ -220,7 +220,8 @@ view model
 hello : Html Msg
 hello
   = hero { heroModifiers | color = Primary, size = Layout.FullHeight, bold = False }
-    [ textCentered, style [ "min-height" => "90vh" ] ]
+    -- [ textCentered, style [ "min-height" => "90vh" ] ]
+    [ textCentered ]
     [ heroBody []
       [ container []
         [ title H1
@@ -239,7 +240,7 @@ hello
       [ tabs { tabsModifiers | size = Modifiers.Large } [ fullWidth ]
         [ container []
           [ ul []
-            [ tab False [] [ a [ href "#specialties" ] [ icon Modifiers.Normal [] [ star     ], text "Specialties" ] ]
+            [ tab False [] [ a [ href "#design"      ] [ icon Modifiers.Normal [] [ star     ], text "Specialties" ] ]
             , tab False [] [ a [ href "#services"    ] [ icon Modifiers.Normal [] [ wrench   ], text "Services"    ] ]
             , tab False [] [ a [ href "#team"        ] [ icon Modifiers.Normal [] [ users    ], text "Team"        ] ]
             , tab False [] [ a [ href "#contact"     ] [ icon Modifiers.Normal [] [ envelope ], text "Contact"     ] ]
@@ -270,12 +271,22 @@ specialties model
 
 interactiveDesign : Model -> Html Msg
 interactiveDesign ({ws,balls} as model)
-  = hero { heroModifiers | color = Info, size = FullHeight } []
+  = hero { heroModifiers | color = Info, size = FullHeight }
+    [ id "design" ]
     [ heroBody [ style [ "z-index" => "2" ] ]
       [ container []
         <| easyTitleWithSubtitle False H1
           [ icon Modifiers.Large [] [ magic ], text " Interactive Design" ]
           [ text "We create engaging experiences." ]
+       ++ [ content Modifiers.Large []
+            [ blockquote [ style [ "color" => "#F5F5F5", "background-color" => "rgba(0,0,0,0)" ] ]
+              [ text "Any product that needs a manual to work is broken."
+              , br [] []
+              , br [] []
+              , span [ style [ "opacity" => "0.85" ] ] [ text "- Elon Musk" ]
+              ]
+            ]
+          ]
       ]
     , div [ style [ "position" => "absolute", "z-index" => "1" ] ]
       [ ballpit ws balls
@@ -311,6 +322,28 @@ systemsArchitecture
         <| easyTitleWithSubtitle False H1
           [ icon Modifiers.Large [] [ cubes ], text " Systems Architecture" ]
           [ text "We grow scalable systems." ]
+       ++ [ content Modifiers.Large []
+            [ blockquote []
+              [ text "Is it really "
+              , em [] [ text "complex" ]
+              , text "? Or did we just make it "
+              , em [] [ text "complicated" ]
+              , text "?"
+              , br [] []
+              , br [] []
+              , span [ style [ "opacity" => "0.85" ] ] [ text "- Alan Kay" ]
+              ]
+            , p [ style [ "max-width" => "500px" ] ]
+              [ text "Consequatur nihil aut esse. Libero impedit et autem aut dicta dolore at voluptas. Necessitatibus ducimus autem sapiente amet ad repellat animi."
+              ]
+            , p [ style [ "max-width" => "500px" ] ]
+              [ text "Unde ad ad omnis saepe quas. Magni et aut rem cumque voluptatem architecto quia et. Omnis voluptatem autem nihil rerum. Et dignissimos consectetur dolor consequatur rerum minus sit. Aperiam ut optio praesentium accusantium."
+              ]
+            , p [ style [ "max-width" => "500px" ] ]
+              [ text "Ipsam et quas aperiam facilis facere possimus. Voluptate suscipit tempora quo cupiditate reiciendis. Itaque earum voluptates explicabo. Aspernatur quam aut voluptatum nisi enim quia non."
+              ]
+            ]
+          ]
       ]
     ]
 
