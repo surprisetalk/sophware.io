@@ -1,6 +1,7 @@
 
 module App exposing (..)
 
+-- TODO: we should really have, like, a step-by-step project calculator
 
 -- IMPORTS ---------------------------------------------------------------------
 
@@ -11,8 +12,8 @@ import Bulma.CDN as CDN exposing (..)
 
 import Bulma.Components as Components exposing (..)
 import Bulma.Elements as Elements exposing (..)
-import Bulma.Elements.Icon as Icon exposing ( icon, flask, code, smile_o, star_o, star, heart, cube, cogs, cubes, magic, wrench, users, envelope )
--- import Bulma.Grid as Grid exposing (..)
+import Bulma.Elements.Icon as Icon exposing ( icon, flask, code, smile_o, comment, star_o, star, heart, cube, cogs, cubes, magic, wrench, users, envelope )
+import Bulma.Grid as Grid exposing (..)
 import Bulma.Helpers as Helpers exposing (..)
 import Bulma.Modifiers as Modifiers exposing (..)
 import Bulma.Layout as Layout exposing (..)
@@ -267,8 +268,8 @@ specialties model
   = [ interactiveDesign model
     , systemsArchitecture
     , branding model
-    , webDevelopment
     , research
+    , webDevelopment
     ]
 
 interactiveDesign : Model -> Html Msg
@@ -389,13 +390,30 @@ systemsArchitecture
 
 webDevelopment : Html Msg
 webDevelopment
-  = hero { heroModifiers | color = Info, size = FullHeight } []
+  = hero { heroModifiers | color = Light, size = FullHeight } []
     [ heroBody []
       [ container []
         <| easyTitleWithSubtitle False H1
           [ icon Modifiers.Large [] [ code ], text " Software Development" ]
           [ text "We build elegant software." ]
-        -- TODO: language logos
+       ++ [ br [] [] ]
+       ++ ( ls
+          <| columns { columnsModifiers | multiline = False, gapless = True, display = MobileAndBeyond } [ style [ "max-width" => "600px" ] ]
+          <| map (easyImage { imageModifiers | size = Just X128 } [ class "gray" ] >> ls >> a [] >> ls >> column { columnModifiers | widths = { mobile = Width4, tablet = Width4, desktop = Width4 } } []) 
+            [ "/img/elm"
+            , "/img/js.png"
+            , "/img/haskell.png"
+            -- , "/img/python.png"
+            ])
+       ++ ( ls
+          <| columns { columnsModifiers | multiline = False, gapless = True, display = MobileAndBeyond } [ style [ "max-width" => "600px" ] ]
+          <| map (easyImage { imageModifiers | size = Just X128 } [ class "gray" ] >> ls >> a [] >> ls >> column { columnModifiers | widths = { mobile = Width4, tablet = Width4, desktop = Width4 } } []) 
+            [ "/img/php.png"
+            , "/img/lisp.png"
+            , "/img/elixir"
+            -- , "/img/python.png"
+            ])
+        -- TODO: link to github?
       ]
     ]
 -- TODO: engineering specialties
@@ -406,13 +424,13 @@ webDevelopment
 
 research : Html Msg
 research
-  = hero { heroModifiers | color = Light, size = FullHeight } []
+  = hero { heroModifiers | color = Info, size = FullHeight } []
     [ heroBody []
       [ container []
         <| easyTitleWithSubtitle False H1
           [ icon Modifiers.Large [] [ flask ], text "Research" ]
           [ text "We solve problems." ]
-       ++ [ content Modifiers.Medium []
+       ++ [ content Modifiers.Medium [ style [ "color" => "#F5F5F5" ] ]
             [ p [ style [ "max-width" => "500px" ] ]
               [ text "Consequatur nihil aut esse. Libero impedit et autem aut dicta dolore at voluptas. Necessitatibus ducimus autem sapiente amet ad repellat animi."
               ]
@@ -431,17 +449,121 @@ research
     -- TODO:   music
 
 services : Htmls Msg
-services = []
+services
+  = [ hero { heroModifiers | color = Dark, size = FullHeight } []
+      [ heroBody [ style [ "padding" => "4.5rem 1.5rem" ] ]
+        [ container []
+          [ title H1 [ textCentered, style [ "margin-left" => "-10px" ] ] [ icon Modifiers.Large [] [ Html.i [ class "fa fa-map-o" ] [] ], text " Services" ]
+          , br [] []
+          , br [] []
+          , columns { columnsModifiers | multiline = True } []
+          <| map (column { columnModifiers | widths = { mobile = Width8, tablet = Width6, desktop = Width3 } } []) 
+          <| map (\(i,h,t) -> [ title H3 [] [ icon Modifiers.Medium [] [ Html.i [ class <| "fa fa-" ++ i ] [] ], text " ", text h ], t |> map (text >> ls >> p []) |> flip (++) [ br [] [], br [] [] ] |> content Modifiers.Medium [ style [ "color" => "#F5F5F5" ] ] ])
+            [ ( "code"
+              , "Engineering"
+              , [ "Consequatur nihil aut esse. Libero impedit et autem aut dicta dolore at voluptas. Necessitatibus ducimus autem sapiente amet ad repellat animi."
+                , "Unde ad ad omnis saepe quas. Magni et aut rem cumque voluptatem architecto quia et. Omnis voluptatem autem nihil rerum. Et dignissimos consectetur dolor consequatur rerum minus sit. Aperiam ut optio praesentium accusantium."
+                ]
+              )
+            , ( "flask"
+              , "Studies"
+              , [ "Consequatur nihil aut esse. Libero impedit et autem aut dicta dolore at voluptas. Necessitatibus ducimus autem sapiente amet ad repellat animi."
+                , "Unde ad ad omnis saepe quas. Magni et aut rem cumque voluptatem architecto quia et. Omnis voluptatem autem nihil rerum. Et dignissimos consectetur dolor consequatur rerum minus sit. Aperiam ut optio praesentium accusantium."
+                ]
+              )
+            , ( "line-chart"
+              , "Consulting"
+              , [ "Consequatur nihil aut esse. Libero impedit et autem aut dicta dolore at voluptas. Necessitatibus ducimus autem sapiente amet ad repellat animi."
+                , "Unde ad ad omnis saepe quas. Magni et aut rem cumque voluptatem architecto quia et. Omnis voluptatem autem nihil rerum. Et dignissimos consectetur dolor consequatur rerum minus sit. Aperiam ut optio praesentium accusantium."
+                ]
+              )
+            , ( "handshake-o"
+              , "Partnership"
+              , [ "Consequatur nihil aut esse. Libero impedit et autem aut dicta dolore at voluptas. Necessitatibus ducimus autem sapiente amet ad repellat animi."
+                , "Unde ad ad omnis saepe quas. Magni et aut rem cumque voluptatem architecto quia et. Omnis voluptatem autem nihil rerum. Et dignissimos consectetur dolor consequatur rerum minus sit. Aperiam ut optio praesentium accusantium."
+                ]
+              )
+            -- , ( "Strategy"
+            --   , [ "..." ]
+            --   )
+            ]
+          ]
+        ]
+      ]
+    ]
 -- TODO: we need to express that we do partnership, consulting, development, studies, product strategy, etc.
 
 team : Htmls Msg
-team = []
+team
+  = [ hero { heroModifiers | color = Info } []
+      [ heroBody []
+        [ container []
+          [ columns { columnsModifiers | multiline = True, display = MobileAndBeyond } []
+          <| map (easyImage imageModifiers [ class "gray" ] >> ls >> a [] >> ls >> column { columnModifiers | widths = { mobile = Width4, tablet = Width4, desktop = Width2 } } []) 
+            [ "http://bulma.io/images/placeholders/128x128.png"
+            , "http://bulma.io/images/placeholders/128x128.png"
+            , "http://bulma.io/images/placeholders/128x128.png"
+            , "http://bulma.io/images/placeholders/128x128.png"
+            , "http://bulma.io/images/placeholders/128x128.png"
+            , "http://bulma.io/images/placeholders/128x128.png"
+            ]
+          ]
+        ]
+      ]
+    ]
 
 contact : Htmls Msg
-contact = []
+contact
+  = [ hero { heroModifiers | color = Primary } []
+      [ heroBody []
+        [ container []
+          [ columns { columnsModifiers | display = TabletAndBeyond } [ class "is-vcentered" ]
+            -- [ column { columnModifiers | offset = Width1, widths = { mobile = Auto, tablet = Width4, desktop = Width4 } } []
+              -- [ columns { columnsModifiers | multiline = True, display = MobileAndBeyond } []
+              -- <| map (easyImage imageModifiers [ class "gray" ] >> ls >> a [] >> ls >> column { columnModifiers | widths = { mobile = Width4, tablet = Width4, desktop = Width4 } } []) 
+              --   [ "http://bulma.io/images/placeholders/128x128.png"
+              --   , "http://bulma.io/images/placeholders/128x128.png"
+              --   , "http://bulma.io/images/placeholders/128x128.png"
+              --   , "http://bulma.io/images/placeholders/128x128.png"
+              --   , "http://bulma.io/images/placeholders/128x128.png"
+              --   , "http://bulma.io/images/placeholders/128x128.png"
+              --   ]
+              -- ]
+            [ column columnModifiers [ displayByDevice { mobile = InlineFlex, tablet = Block, desktop = Block, widescreen = Block } ]
+              [ easyImage imageModifiers [] "http://bulma.io/images/placeholders/1280x960.png"
+              ]
+            , column columnModifiers []
+              <| easyTitleWithSubtitle True H2
+                [ icon Modifiers.Large [] [ comment ], text " Contact" ]
+                [ text "" ]
+           ++ [ field []
+                [ controlInput False { controlModifiers | iconLeft = Just ( Modifiers.Small, [], envelope ) } [] [ Attr.placeholder "Email" ] []
+                ]
+              , field []
+                [ controlTextArea False controlModifiers [] [ Attr.placeholder "Say hello! We're friendly." ] []
+                ]
+              , field []
+                [ control controlModifiers []
+                  [ button { buttonModifiers | color = Primary, inverted = True, outlined = True } [] [ text "Submit" ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
 
 foot : Htmls Msg
-foot = []
+foot
+  = [ footer []
+      [ container []
+        [ content Modifiers.Medium []
+          [ p [] [ text "Consequatur nihil aut esse. Libero impedit et autem aut dicta dolore at voluptas. Necessitatibus ducimus autem sapiente amet ad repellat animi." ]
+          ]
+        ]
+      ]   
+    ]
 
 
 -- MAIN ------------------------------------------------------------------------
