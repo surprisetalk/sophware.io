@@ -12,7 +12,7 @@ import Bulma.CDN as CDN exposing (..)
 
 import Bulma.Components as Components exposing (..)
 import Bulma.Elements as Elements exposing (..)
-import Bulma.Elements.Icon as Icon exposing ( icon, flask, code, smile_o, comment, star_o, star, heart, cube, cogs, cubes, magic, wrench, users, envelope )
+import Bulma.Elements.Icon as Icon exposing ( icon, flask, code, smile_o, comment, star_o, star, heart, cube, cogs, cubes, magic, wrench, users, envelope, group, code_fork, user, send )
 import Bulma.Grid as Grid exposing (..)
 import Bulma.Helpers as Helpers exposing (..)
 import Bulma.Modifiers as Modifiers exposing (..)
@@ -141,7 +141,7 @@ update msg ({m,ws,balls,mesh} as model)
             -- g = ( ( toFloat m.y + toFloat ws.height + flor ) / toFloat ws.height ) * 10.0
 
             fr : Float
-            fr = 1
+            fr = 0.25
 
             -- my : Float
             -- my = negate (toFloat m.y - toFloat ws.height - flor)
@@ -192,7 +192,7 @@ update msg ({m,ws,balls,mesh} as model)
                     ,  x = ( vx * t ) + x |> clamp (    r + negate wall) (wall - r    )
                     ,  y = ( vy * t ) + y |> clamp (1 + r + negate flor) (flor - r - 1)
                     , vx = vx - (t * g / r) 
-                    , vy = (vy * -1) + fr
+                    , vy = ((vy - fr) * -1)
                     }
 
                   ( _, True ) ->
@@ -200,7 +200,7 @@ update msg ({m,ws,balls,mesh} as model)
                     {  r = r
                     ,  x = ( vx * t ) + x |> clamp (1 + r + negate wall) (wall - r - 1)
                     ,  y = ( vy * t ) + y |> clamp (    r + negate flor) (flor - r    )
-                    , vx = (( vx + fr ) * -1) + (t * g / r)
+                    , vx = (( vx - fr ) * -1) + (t * g / r)
                     , vy = vy
                     }
 
@@ -263,10 +263,12 @@ view model
   <| (::) hello
   <| concat
     [ specialties model
-    , services -- Dark
-    , team     -- Primary
-    , contact  -- Info
-    , foot     -- Dark
+    , services
+    -- , team
+    , community
+    , estimate
+    , contact
+    , foot
     ]
 
 hello : Html Msg
@@ -292,16 +294,23 @@ hello
       [ tabs { tabsModifiers | size = Modifiers.Large } [ fullWidth ]
         [ container []
           [ ul []
-            [ tab False [] [ a [ href "#design"      ] [ icon Modifiers.Normal [] [ star     ], text "Specialties" ] ]
-            , tab False [] [ a [ href "#services"    ] [ icon Modifiers.Normal [] [ wrench   ], text "Services"    ] ]
-            , tab False [] [ a [ href "#team"        ] [ icon Modifiers.Normal [] [ users    ], text "Team"        ] ]
-            , tab False [] [ a [ href "#contact"     ] [ icon Modifiers.Normal [] [ envelope ], text "Contact"     ] ]
+            [ tab False [] [ a [ href "#design"      ] [ icon Modifiers.Normal [] [ star                              ], text "Specialties" ] ]
+            , tab False [] [ a [ href "#services"    ] [ icon Modifiers.Normal [] [ Icon.map                          ], text "Services"    ] ]
+            , tab False [] [ a [ href "#community"   ] [ icon Modifiers.Normal [] [ heart                             ], text "Community"   ] ]
+            , tab False [] [ a [ href "#team"        ] [ icon Modifiers.Normal [] [ magic                             ], text "Estimate"    ] ]
+            -- , tab False [] [ a [ href "#team"        ] [ icon Modifiers.Normal [] [ users                             ], text "Team"        ] ]
+            , tab False [] [ a [ href "#contact"     ] [ icon Modifiers.Normal [] [ envelope                          ], text "Contact"     ] ]
             ]
             -- TODO: icons
             -- TODO: the first three should be rolled-up into a dropdown called "specialties" or something
           ]
         ]
       ]
+    ]
+
+wizard : Model -> Htmls Msg
+wizard model
+  = [
     ]
 
 specialties : Model -> Htmls Msg
@@ -317,8 +326,17 @@ specialties model
   = [ interactiveDesign model
     , systemsArchitecture model
     , branding model
-    , research model
     , webDevelopment
+    , research model
+    ]
+
+learnMore : ButtonModifiers -> Html Msg
+learnMore mods
+  = iconButton mods
+    (icon Modifiers.Medium [] [ magic ]) []
+    [ span []
+      [ text "Learn More"
+      ]
     ]
 
 interactiveDesign : Model -> Html Msg
@@ -328,7 +346,7 @@ interactiveDesign ({ws,balls} as model)
     [ heroBody [ style [ "z-index" => "2" ] ]
       [ container [ style [] ]
         <| easyTitleWithSubtitle False H1
-          [ icon Modifiers.Large [] [ magic ], text " UX Design" ]
+          [ icon Modifiers.Large [] [ Html.i [ class "fa fa-th" ] [] ], text " UX Design" ]
           [ text "We create experiences." ]
        ++ [ content Modifiers.Medium []
             [ blockquote [ style [ "color" => "#F5F5F5", "background-color" => "rgba(0,0,0,0)" ] ]
@@ -338,6 +356,8 @@ interactiveDesign ({ws,balls} as model)
               , span [ style [ "opacity" => "0.85" ] ] [ text "- Elon Musk" ]
               ]
             ]
+          , br [] []
+          , learnMore { buttonModifiers | color = Info, size = Modifiers.Large, inverted = True, outlined = True }
           ]
       ]
     , div [ style [ "position" => "absolute", "z-index" => "1" ] ]
@@ -381,6 +401,8 @@ branding ({ws,balls} as model)
               [ text "Unde ad ad omnis saepe quas. Magni et aut rem cumque voluptatem architecto quia et. Omnis voluptatem autem nihil rerum. Et dignissimos consectetur dolor consequatur rerum minus sit. Aperiam ut optio praesentium accusantium."
               ]
             ]
+          , br [] []
+          , learnMore { buttonModifiers | color = Dark, size = Modifiers.Large, inverted = False, outlined = True }
           ]
       ]
     -- , div [ style [ "position" => "absolute", "z-index" => "1" ] ]
@@ -432,6 +454,8 @@ systemsArchitecture ({ws,mesh} as model)
               [ text "Unde ad ad omnis saepe quas. Magni et aut rem cumque voluptatem architecto quia et. Omnis voluptatem autem nihil rerum. Et dignissimos consectetur dolor consequatur rerum minus sit. Aperiam ut optio praesentium accusantium."
               ]
             ]
+          , br [] []
+          , learnMore { buttonModifiers | color = Dark, size = Modifiers.Large, inverted = False, outlined = True }
           ]
       ]
     ]
@@ -497,6 +521,28 @@ webDevelopment
             -- , "/img/python.png"
             ])
         -- TODO: link to github?
+       ++ [ content Modifiers.Medium []
+            [ -- blockquote [ style [ "border-color" => "rgba(74,74,74,0.6)", "color" => "#4a4a4a", "background-color" => "rgba(0,0,0,0)" ] ]
+              -- [ text "Is it really "
+              -- , em [] [ text "complex" ]
+              -- , text "? Or did we just make it "
+              -- , em [] [ text "complicated" ]
+              -- , text "?"
+              -- , br [] []
+              -- , br [] []
+              -- , span [ style [ "opacity" => "0.85" ] ] [ text "- Alan Kay" ]
+              -- ]
+              br [] []
+            , p [ style [ "max-width" => "500px" ] ]
+              [ text "Consequatur nihil aut esse. Libero impedit et autem aut dicta dolore at voluptas. Necessitatibus ducimus autem sapiente amet ad repellat animi."
+              ]
+            -- , p [ style [ "max-width" => "500px" ] ]
+            --   [ text "Unde ad ad omnis saepe quas. Magni et aut rem cumque voluptatem architecto quia et. Omnis voluptatem autem nihil rerum. Et dignissimos consectetur dolor consequatur rerum minus sit. Aperiam ut optio praesentium accusantium."
+            --   ]
+            ]
+          , br [] []
+          , learnMore { buttonModifiers | color = Dark, size = Modifiers.Large, inverted = False, outlined = True }
+          ]
       ]
     ]
 -- TODO: engineering specialties
@@ -521,6 +567,8 @@ research ({ws,mesh} as model)
               [ text "Unde ad ad omnis saepe quas. Magni et aut rem cumque voluptatem architecto quia et. Omnis voluptatem autem nihil rerum. Et dignissimos consectetur dolor consequatur rerum minus sit. Aperiam ut optio praesentium accusantium."
               ]
             ]
+          , br [] []
+          , learnMore { buttonModifiers | color = Info, size = Modifiers.Large, inverted = True, outlined = True }
           ]
       ]
     , div [ style [ "position" => "absolute", "z-index" => "1" ] ]
@@ -536,10 +584,10 @@ research ({ws,mesh} as model)
 
 services : Htmls Msg
 services
-  = [ hero { heroModifiers | color = Dark, size = FullHeight } []
-      [ heroBody [ style [ "padding" => "4.5rem 1.5rem" ] ]
+  = [ hero { heroModifiers | color = Dark, size = Layout.Medium } []
+      [ heroBody []
         [ container []
-          [ title H1 [ textCentered, style [ "margin-left" => "-10px" ] ] [ icon Modifiers.Large [] [ Html.i [ class "fa fa-map-o" ] [] ], text " Services" ]
+          [ title H1 [] [ icon Modifiers.Large [] [ Html.i [ class "fa fa-map-o" ] [] ], text " Services" ]
           , br [] []
           , br [] []
           , columns { columnsModifiers | multiline = True } []
@@ -547,26 +595,22 @@ services
           <| map (\(i,h,t) -> [ title H3 [] [ icon Modifiers.Medium [] [ Html.i [ class <| "fa fa-" ++ i ] [] ], text " ", text h ], t |> map (text >> ls >> p []) |> flip (++) [ br [] [], br [] [] ] |> content Modifiers.Medium [ style [ "color" => "#F5F5F5" ] ] ])
             [ ( "code"
               , "Engineering"
-              , [ "Consequatur nihil aut esse. Libero impedit et autem aut dicta dolore at voluptas. Necessitatibus ducimus autem sapiente amet ad repellat animi."
-                , "Unde ad ad omnis saepe quas. Magni et aut rem cumque voluptatem architecto quia et. Omnis voluptatem autem nihil rerum. Et dignissimos consectetur dolor consequatur rerum minus sit. Aperiam ut optio praesentium accusantium."
+              , [ "Unde ad ad omnis saepe quas. Magni et aut rem cumque voluptatem architecto quia et. Omnis voluptatem autem nihil rerum. Et dignissimos consectetur dolor consequatur rerum minus sit. Aperiam ut optio praesentium accusantium."
                 ]
               )
             , ( "flask"
               , "Studies"
               , [ "Consequatur nihil aut esse. Libero impedit et autem aut dicta dolore at voluptas. Necessitatibus ducimus autem sapiente amet ad repellat animi."
-                , "Unde ad ad omnis saepe quas. Magni et aut rem cumque voluptatem architecto quia et. Omnis voluptatem autem nihil rerum. Et dignissimos consectetur dolor consequatur rerum minus sit. Aperiam ut optio praesentium accusantium."
                 ]
               )
             , ( "line-chart"
               , "Consulting"
-              , [ "Consequatur nihil aut esse. Libero impedit et autem aut dicta dolore at voluptas. Necessitatibus ducimus autem sapiente amet ad repellat animi."
-                , "Unde ad ad omnis saepe quas. Magni et aut rem cumque voluptatem architecto quia et. Omnis voluptatem autem nihil rerum. Et dignissimos consectetur dolor consequatur rerum minus sit. Aperiam ut optio praesentium accusantium."
+              , [ "Unde ad ad omnis saepe quas. Magni et aut rem cumque voluptatem architecto quia et. Omnis voluptatem autem nihil rerum. Et dignissimos consectetur dolor consequatur rerum minus sit. Aperiam ut optio praesentium accusantium."
                 ]
               )
             , ( "handshake-o"
               , "Partnership"
               , [ "Consequatur nihil aut esse. Libero impedit et autem aut dicta dolore at voluptas. Necessitatibus ducimus autem sapiente amet ad repellat animi."
-                , "Unde ad ad omnis saepe quas. Magni et aut rem cumque voluptatem architecto quia et. Omnis voluptatem autem nihil rerum. Et dignissimos consectetur dolor consequatur rerum minus sit. Aperiam ut optio praesentium accusantium."
                 ]
               )
             -- , ( "Strategy"
@@ -578,6 +622,59 @@ services
       ]
     ]
 -- TODO: we need to express that we do partnership, consulting, development, studies, product strategy, etc.
+
+estimate : Htmls Msg
+estimate
+  = [ hero { heroModifiers | color = Info, size = Layout.Medium }
+      []
+      [ heroBody []
+        [ container []
+          [ title H2 [] [ text " Let's make something." ]
+          , br [] []
+          , iconButton { buttonModifiers | size = Modifiers.Large, color = Info, outlined = True, inverted = True }
+            (icon Modifiers.Normal [] [ magic ])
+            []
+            [ span [] [ text "Get Started" ] ]
+          ]
+        ]
+      ]
+    ]
+
+community : Htmls Msg
+community
+  = [ hero { heroModifiers | color = Light, size = Layout.Medium } []
+      [ heroBody []
+        [ container []
+          [ title H1 [] [ icon Modifiers.Large [] [ heart ], text " Community" ]
+          , br [] []
+          , br [] []
+          , columns { columnsModifiers | multiline = True } []
+          <| map (column { columnModifiers | widths = { mobile = Width8, tablet = Width4, desktop = Width4 } } []) 
+          <| map (\(i,h,t) -> [ title H3 [] [ icon Modifiers.Medium [] [ Html.i [ class <| "fa fa-" ++ i ] [] ], text " ", text h ], t |> map (text >> ls >> p []) |> flip (++) [ br [] [], br [] [] ] |> content Modifiers.Medium [] ])
+            [ ( "sun-o"
+              , "Charity"
+              , [ "Consequatur nihil aut esse. Libero impedit et autem aut dicta dolore at voluptas. Necessitatibus ducimus autem sapiente amet ad repellat animi."
+                ]
+              )
+            , ( "code-fork"
+              , "Open-Source"
+              , [ "Consequatur nihil aut esse. Libero impedit et autem aut dicta dolore at voluptas. Necessitatibus ducimus autem sapiente amet ad repellat animi."
+                ]
+              )
+            , ( "certificate"
+              , "Non-Profits"
+              , [ "Consequatur nihil aut esse. Libero impedit et autem aut dicta dolore at voluptas. Necessitatibus ducimus autem sapiente amet ad repellat animi."
+                ]
+              )
+            ]
+          ]
+        ]
+      ]
+    ]
+  -- = [ -- TODO: nonprofits discount
+  --   , -- TODO: 10%
+  --   , -- TODO: open-source
+  --   ]
 
 team : Htmls Msg
 team
@@ -600,42 +697,47 @@ team
 
 contact : Htmls Msg
 contact
-  = [ hero { heroModifiers | color = Primary } []
+  = [ hero { heroModifiers | color = Primary, size = Layout.Medium } []
       [ heroBody []
         [ container []
-          [ columns { columnsModifiers | display = TabletAndBeyond } [ class "is-vcentered" ]
-            -- [ column { columnModifiers | offset = Width1, widths = { mobile = Auto, tablet = Width4, desktop = Width4 } } []
-              -- [ columns { columnsModifiers | multiline = True, display = MobileAndBeyond } []
-              -- <| map (easyImage imageModifiers [ class "gray" ] >> ls >> a [] >> ls >> column { columnModifiers | widths = { mobile = Width4, tablet = Width4, desktop = Width4 } } []) 
-              --   [ "http://bulma.io/images/placeholders/128x128.png"
-              --   , "http://bulma.io/images/placeholders/128x128.png"
-              --   , "http://bulma.io/images/placeholders/128x128.png"
-              --   , "http://bulma.io/images/placeholders/128x128.png"
-              --   , "http://bulma.io/images/placeholders/128x128.png"
-              --   , "http://bulma.io/images/placeholders/128x128.png"
-              --   ]
-              -- ]
-            [ column columnModifiers [ displayByDevice { mobile = InlineFlex, tablet = Block, desktop = Block, widescreen = Block } ]
-              [ easyImage imageModifiers [] "http://bulma.io/images/placeholders/1280x960.png"
-              ]
-            , column columnModifiers []
+          -- [ columns { columnsModifiers | display = TabletAndBeyond } [ class "is-vcentered" ]
+          --   -- [ column columnModifiers [ displayByDevice { mobile = InlineFlex, tablet = Block, desktop = Block, widescreen = Block } ]
+          --   --   [ easyImage imageModifiers [] "http://bulma.io/images/placeholders/1280x960.png"
+          --   --   ]
+          --   -- [ column { columnModifiers | widths = { mobile = Auto, tablet = Width6, desktop = Width6 } } []
+          --   [ column columnModifiers []
               <| easyTitleWithSubtitle True H2
                 [ icon Modifiers.Large [] [ comment ], text " Contact" ]
                 [ text "" ]
-           ++ [ field []
-                [ controlInput False { controlModifiers | iconLeft = Just ( Modifiers.Small, [], envelope ) } [] [ Attr.placeholder "Email" ] []
+           ++ [ field [ class "is-grouped" ]
+                [ controlInput False { controlModifiers | iconLeft = Just ( Modifiers.Medium, [], user     ), expanded = True, size = Modifiers.Large  } [] [ Attr.placeholder "Name " ] []
+                , controlInput False { controlModifiers | iconLeft = Just ( Modifiers.Medium, [], envelope ), expanded = True, size = Modifiers.Large  } [] [ Attr.placeholder "Email" ] []
                 ]
               , field []
-                [ controlTextArea False controlModifiers [] [ Attr.placeholder "Say hello! We're friendly." ] []
+                [ controlTextArea False { controlModifiers | size = Modifiers.Large } [] [ Attr.placeholder "Say hello! We're friendly." ] []
                 ]
+              , br [] []
               , field []
                 [ control controlModifiers []
-                  [ button { buttonModifiers | color = Primary, inverted = True, outlined = True } [] [ text "Submit" ]
+                  [ iconButton { buttonModifiers | color = Primary, inverted = True, outlined = True, size = Modifiers.Large } (icon Modifiers.Normal [] [ send ]) [] [ span [] [ text "Send" ] ]
                   ]
                 ]
+                -- TODO: i want this on the right
               ]
-            ]
-          ]
+            -- , column { columnModifiers | offset = Width1, widths = { mobile = Auto, tablet = Width5, desktop = Width5 } }
+            --   [ displayByDevice { mobile = InlineFlex, tablet = Block, desktop = Block, widescreen = Block } ]
+            --   [ columns { columnsModifiers | multiline = True, display = MobileAndBeyond } []
+            --   <| map (easyImage imageModifiers [ class "gray" ] >> ls >> a [] >> ls >> column { columnModifiers | widths = { mobile = Width4, tablet = Width4, desktop = Width4 } } []) 
+            --     [ "http://bulma.io/images/placeholders/128x128.png"
+            --     , "http://bulma.io/images/placeholders/128x128.png"
+            --     , "http://bulma.io/images/placeholders/128x128.png"
+            --     , "http://bulma.io/images/placeholders/128x128.png"
+            --     , "http://bulma.io/images/placeholders/128x128.png"
+            --     , "http://bulma.io/images/placeholders/128x128.png"
+            --     ]
+            --   ]
+          --   ]
+          -- ]
         ]
       ]
     ]
