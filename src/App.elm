@@ -747,7 +747,7 @@ foot
   = [ footer []
       [ container []
         [ content Modifiers.Medium []
-          [ p [] [ text "Consequatur nihil aut esse. Libero impedit et autem aut dicta dolore at voluptas. Necessitatibus ducimus autem sapiente amet ad repellat animi." ]
+          [ p [] [ text "Consequatur nihil aut esse. Libero impedit et autem aut dicta dolore at voluptas." ]
           ]
         ]
       ]   
