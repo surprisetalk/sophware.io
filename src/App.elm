@@ -12,7 +12,7 @@ import Bulma.CDN as CDN exposing (..)
 
 import Bulma.Components as Components exposing (..)
 import Bulma.Elements as Elements exposing (..)
-import Bulma.Elements.Icon as Icon exposing ( icon, flask, code, smile_o, comment, star_o, star, heart, cube, cogs, cubes, magic, wrench, users, envelope, group, code_fork, user, send )
+import Bulma.Elements.Icon as Icon exposing ( icon, flask, code, smile_o, comment, star_o, star, heart, cube, cogs, cubes, magic, wrench, users, envelope, group, code_fork, user, send, cog )
 import Bulma.Grid as Grid exposing (..)
 import Bulma.Helpers as Helpers exposing (..)
 import Bulma.Modifiers as Modifiers exposing (..)
@@ -329,6 +329,7 @@ specialties model
     , branding model
     , webDevelopment
     , research model
+    , automation model
     ]
 
 learnMore : ButtonModifiers -> Html Msg
@@ -382,8 +383,9 @@ branding ({ws,balls} as model)
     [ heroBody [ style [ "z-index" => "2" ] ]
       [ container []
         <| easyTitleWithSubtitle False H1
-          [ icon Modifiers.Large [] [ heart ], text " Branding" ]
-          [ text "We make companies memorable." ]
+          [ icon Modifiers.Large [] [ star ], text " Branding" ]
+          -- [ text "We make companies memorable." ]
+          [ text "We build legacies." ]
        ++ [ content Modifiers.Medium []
             [ -- blockquote [ style [ "border-color" => "rgba(74,74,74,0.6)", "color" => "#4a4a4a", "background-color" => "rgba(0,0,0,0)" ] ]
               -- [ text "Is it really "
@@ -461,6 +463,41 @@ systemsArchitecture ({ws,mesh} as model)
       ]
     ]
 
+automation : Model -> Html Msg
+automation ({ws,balls} as model)
+  = hero { heroModifiers | color = Warning, size = FullHeight } []
+    [ heroBody [ style [ "z-index" => "2" ] ]
+      [ container []
+        <| easyTitleWithSubtitle False H1
+          [ icon Modifiers.Large [] [ cog ], text " Automation" ]
+          [ text "We make momentum." ]
+       ++ [ content Modifiers.Medium []
+            [ -- blockquote [ style [ "border-color" => "rgba(74,74,74,0.6)", "color" => "#4a4a4a", "background-color" => "rgba(0,0,0,0)" ] ]
+              -- [ text "Is it really "
+              -- , em [] [ text "complex" ]
+              -- , text "? Or did we just make it "
+              -- , em [] [ text "complicated" ]
+              -- , text "?"
+              -- , br [] []
+              -- , br [] []
+              -- , span [ style [ "opacity" => "0.85" ] ] [ text "- Alan Kay" ]
+              -- ]
+              p [ style [ "max-width" => "500px" ] ]
+              [ text "Consequatur nihil aut esse. Libero impedit et autem aut dicta dolore at voluptas. Necessitatibus ducimus autem sapiente amet ad repellat animi."
+              ]
+            , p [ style [ "max-width" => "500px" ] ]
+              [ text "Unde ad ad omnis saepe quas. Magni et aut rem cumque voluptatem architecto quia et. Omnis voluptatem autem nihil rerum. Et dignissimos consectetur dolor consequatur rerum minus sit. Aperiam ut optio praesentium accusantium."
+              ]
+            ]
+          , br [] []
+          , learnMore { buttonModifiers | color = Dark, size = Modifiers.Large, inverted = False, outlined = True }
+          ]
+      ]
+    -- , div [ style [ "position" => "absolute", "z-index" => "1" ] ]
+    --   [ monument ws balls
+    --   ] 
+    ]
+
 -- randoms : List (Float,Float)
 -- randoms
 --   = List.map2 (,)
@@ -503,7 +540,7 @@ webDevelopment
       [ container []
         <| easyTitleWithSubtitle False H1
           [ icon Modifiers.Large [] [ code ], text " Software Development" ]
-          [ text "We build elegant software." ]
+          [ text "We compute." ]
        ++ [ br [] [] ]
        ++ ( ls
           <| columns { columnsModifiers | multiline = False, gapless = True, display = MobileAndBeyond } [ style [ "max-width" => "600px" ] ]
