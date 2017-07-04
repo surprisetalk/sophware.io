@@ -21,7 +21,7 @@ import Bulma.Layout as Layout exposing (..)
 -- import Svg exposing ( svg, circle, rect )
 -- import Svg.Attributes as SvgAttr exposing ( cx, cy, r, width, height, rx, ry, viewBox, x, y )
 
-import Collage as Collage exposing ( collage, circle, polygon, filled, outlined, defaultLine, move, rotate, ngon )
+import Collage as Collage exposing ( collage, circle, polygon, filled, outlined, defaultLine, move, rotate, ngon, solid )
 import Element as Element exposing ( opacity )
 
 import AnimationFrame
@@ -38,6 +38,8 @@ import Color exposing ( rgba, yellow )
 
 import Time exposing ( Time, inMilliseconds )
 
+import Random exposing ( generate, list, pair, float )
+
 
 -- HEPLERS ---------------------------------------------------------------------
 
@@ -45,6 +47,13 @@ import Time exposing ( Time, inMilliseconds )
 
 ls : a -> List a
 ls = flip (::) []
+
+sqr : number -> number
+sqr x = x * x
+
+-- (%%) : Float -> Int -> Float
+-- (%%) n k
+--   = 
 
 
 -- ALIASES ---------------------------------------------------------------------
@@ -58,7 +67,7 @@ type alias Attrs msg = List (Attribute msg)
 
 type alias Ball = { r : Float, x : Float, y : Float, vx : Float, vy : Float }
 
-type alias Model = { m : Position, ws : Window.Size, balls : List Ball }
+type alias Model = { m : Position, ws : Window.Size, balls : List Ball, mesh : List (Float,Float) }
 
 
 init : String -> ( Model, Cmd Msg )
@@ -68,13 +77,17 @@ init path
            , height = 1080
            }
     , balls = []
+    , mesh  = []
     }
-    ! [ Window.size |> perform WindowSize ]
+    ! [ Window.size |> perform WindowSize
+      , generate MeshUpdate <| list 600 <| pair (float -1 1) (float -1 1)
+      ]
 
 
 -- MSG -------------------------------------------------------------------------
 
 type Msg = NoOp
+         | MeshUpdate (List (Float,Float))
          | TimeUpdate Time
          | MouseUpdate Position
          | WindowSize Window.Size
@@ -84,14 +97,41 @@ type Msg = NoOp
 -- UPDATE ----------------------------------------------------------------------
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg ({m,ws,balls} as model)
+update msg ({m,ws,balls,mesh} as model)
   = case msg of
+
+      MeshUpdate xs ->
+
+        let distance : (Float,Float) -> (Float,Float) -> Float
+            distance (x1,y1) (x2,y2)
+              = sqrt <| sqr (x2 - x1) + sqr (y2 - y1)
+
+            sorter_ : (Float,Float) -> List (Float,Float) -> List (Float,Float)
+            sorter_ p ps
+              = case List.sortBy (distance p) ps of
+                  []      -> p :: []
+                  q :: qs -> p :: sorter_ q qs
+
+            sorter :  List (Float,Float) -> List (Float,Float)
+            sorter ps
+              = case ps of
+                  []      -> []
+                  q :: qs -> sorter_ q qs
+
+        in { model | mesh = xs |> sorter } ! []
 
       MouseUpdate pos ->
 
-        { model | m = pos } ! []
+        -- TODO: mouse is pretty intense! let's replace this with scroll
+
+        { model
+          | m = pos
+          , mesh  = mesh  |> List.indexedMap (\i (x,y) -> ((-1 ^ toFloat i) * sin (toFloat m.x) * 0.001 + x, (-1 ^ toFloat i) * cos (toFloat m.y) * 0.001 + y))
+        } ! []
 
       TimeUpdate time ->
+
+        -- TODO: wiggle the net
 
         let t : Float
             t = time |> inMilliseconds |> (*) 0.035
@@ -173,7 +213,16 @@ update msg ({m,ws,balls} as model)
                     , vy = vy
                     }
 
-        in { model | balls = balls |> map baller } ! []
+        in { model
+             | balls = balls |> map baller
+             -- , mesh  = mesh  |> map (\(x,y) -> (sin (toFloat m.x) *  0.0001 + x, cos (toFloat m.y) *  0.0001 + y))
+             -- , mesh  = mesh  |> map (\(x,y) ->
+             --                          case ( 1000 * m.x % 2 == 0, 1000 * m.y % 2 == 0 ) of
+             --                            ( True , True  ) -> (sin t *  0.0001 + x, cos t *  0.0001 + y)
+             --                            ( True , False ) -> (cos t *  0.0001 + x, sin t *  0.0001 + y)
+             --                            ( False, True  ) -> (sin t * -0.0001 + x, cos t * -0.0001 + y)
+             --                            ( False, False ) -> (cos t * -0.0001 + x, sin t * -0.0001 + y))
+           } ! []
         -- in { model | balls = [ { r = 25, vx = 0, vy = 0, x = mx, y = my } ] } ! []
 
       WindowResize ws ->
@@ -209,7 +258,7 @@ update msg ({m,ws,balls} as model)
 view : Model -> Html Msg
 view model
   = main_ [ textLeft ]
-  <| (::) CDN.stylesheet
+  -- <| (::) CDN.stylesheet
   <| (::) CDN.fontAwesome
   <| (::) hello
   <| concat
@@ -266,9 +315,9 @@ specialties model
   --   , ( Info,    research          )
   --   ]
   = [ interactiveDesign model
-    , systemsArchitecture
+    , systemsArchitecture model
     , branding model
-    , research
+    , research model
     , webDevelopment
     ]
 
@@ -279,8 +328,8 @@ interactiveDesign ({ws,balls} as model)
     [ heroBody [ style [ "z-index" => "2" ] ]
       [ container [ style [] ]
         <| easyTitleWithSubtitle False H1
-          [ icon Modifiers.Large [] [ magic ], text " Interactive Design" ]
-          [ text "We create engaging experiences." ]
+          [ icon Modifiers.Large [] [ magic ], text " UX Design" ]
+          [ text "We create experiences." ]
        ++ [ content Modifiers.Medium []
             [ blockquote [ style [ "color" => "#F5F5F5", "background-color" => "rgba(0,0,0,0)" ] ]
               [ text "Any product that needs a manual to work is broken."
@@ -357,10 +406,10 @@ branding ({ws,balls} as model)
 --   -- <| map (\{x,y} -> (x / 100, y / 100))
 --   <| balls
 
-systemsArchitecture : Html Msg
-systemsArchitecture
+systemsArchitecture : Model -> Html Msg
+systemsArchitecture ({ws,mesh} as model)
   = hero { heroModifiers | color = Light, size = FullHeight } []
-    [ heroBody []
+    [ heroBody [ style [ "z-index" => "2" ] ]
       [ container []
         <| easyTitleWithSubtitle False H1
           [ icon Modifiers.Large [] [ cubes ], text " Software Architecture" ]
@@ -386,7 +435,41 @@ systemsArchitecture
           ]
       ]
     ]
-  -- TODO: make a mesh that "waves" very slightly
+
+-- randoms : List (Float,Float)
+-- randoms
+--   = List.map2 (,)
+--     (10 ^ 16 * pi |> toString |> String.split "" |> map String.toInt |> map (Result.withDefault 0) |> map toFloat |> map (flip (/) 10.0))
+--     (10 ^ 16 * e |> toString |> String.split "" |> map String.toInt |> map (Result.withDefault 0) |> map toFloat |> map (flip (/) 10.0))
+
+web : Window.Size -> List (Float,Float) -> Html Msg
+web {width,height} mesh
+  = Element.toHtml
+  <| collage width height
+  <| concat
+    -- [ mesh
+    --   |> map (\(x,y) -> circle 5 |> filled (rgba 0 209 178 0.8) |> move (toFloat width * x / 2, toFloat height * y / 2))
+    [ mesh
+      |> map (\(x,y) -> (toFloat width * x / 2, toFloat height * y / 2))
+      |> triples
+      |> map (polygon >> outlined (solid (rgba 0 209 178 0.8)))
+    -- , mesh
+    --   |> List.drop 1
+    --   |> map (\(x,y) -> (toFloat width * x / 2, toFloat height * y / 2))
+    --   |> triples
+    --   |> map (polygon >> outlined (solid (yellow)))
+    -- , mesh
+    --   |> List.drop 2
+    --   |> map (\(x,y) -> (toFloat width * x / 2, toFloat height * y / 2))
+    --   |> triples
+    --   |> map (polygon >> outlined (solid (rgba 255 255 255 0.25)))
+    ]
+
+triples : List a -> List (List a)
+triples xs
+  = case xs of
+      x :: y :: z :: xs -> [x,y,z] :: triples xs
+      xs                -> ls                 xs
 
 webDevelopment : Html Msg
 webDevelopment
@@ -422,10 +505,10 @@ webDevelopment
 -- TODO:   favorite tech / proficient in
 -- TODO:   architecture/engineering
 
-research : Html Msg
-research
+research : Model -> Html Msg
+research ({ws,mesh} as model)
   = hero { heroModifiers | color = Info, size = FullHeight } []
-    [ heroBody []
+    [ heroBody [ style [ "z-index" => "2" ] ]
       [ container []
         <| easyTitleWithSubtitle False H1
           [ icon Modifiers.Large [] [ flask ], text "Research" ]
@@ -440,6 +523,9 @@ research
             ]
           ]
       ]
+    , div [ style [ "position" => "absolute", "z-index" => "1" ] ]
+      [ web ws mesh
+      ] 
     ]
     -- TODO: multiline columns? tiles?
     -- TODO:   mathematics
