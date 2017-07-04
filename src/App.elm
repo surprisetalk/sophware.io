@@ -289,6 +289,7 @@ hello
           , wbr [] []
           , text "WARE" ]
         ]
+        -- TODO: make a cool animation
       ]
     , heroFoot []
       [ tabs { tabsModifiers | size = Modifiers.Large } [ fullWidth ]
