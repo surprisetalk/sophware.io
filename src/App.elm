@@ -20,8 +20,8 @@ import Bulma.Layout as Layout exposing (..)
 -- import Svg exposing ( svg, circle, rect )
 -- import Svg.Attributes as SvgAttr exposing ( cx, cy, r, width, height, rx, ry, viewBox, x, y )
 
-import Collage as Collage exposing ( collage, circle, filled, move )
-import Element as Element
+import Collage as Collage exposing ( collage, circle, polygon, filled, outlined, defaultLine, move, rotate, ngon )
+import Element as Element exposing ( opacity )
 
 import AnimationFrame
 
@@ -33,7 +33,7 @@ import List exposing ( map, map3, concat, intersperse, range )
 
 import Task exposing ( perform )
 
-import Color exposing ( yellow )
+import Color exposing ( rgba, yellow )
 
 import Time exposing ( Time, inMilliseconds )
 
@@ -93,7 +93,7 @@ update msg ({m,ws,balls} as model)
       TimeUpdate time ->
 
         let t : Float
-            t = time |> inMilliseconds |> (*) 0.05
+            t = time |> inMilliseconds |> (*) 0.035
 
             g : Float
             g = 5
@@ -102,19 +102,19 @@ update msg ({m,ws,balls} as model)
             fr : Float
             fr = 1
 
-            my : Float
-            my = negate (toFloat m.y - toFloat ws.height - flor)
-               |> clamp (negate flor) flor
+            -- my : Float
+            -- my = negate (toFloat m.y - toFloat ws.height - flor)
+            --    |> clamp (negate flor) flor
 
-            mx : Float
-            mx = negate wall + toFloat m.x
-               |> clamp (negate wall) wall
+            -- mx : Float
+            -- mx = negate wall + toFloat m.x
+            --    |> clamp (negate wall) wall
 
-            mdx : Float -> Float -> Float
-            mdx r x = r / (mx - x)
+            -- mdx : Float -> Float -> Float
+            -- mdx r x = r / (mx - x)
 
-            mdy : Float -> Float -> Float
-            mdy r y = r / (my - y)
+            -- mdy : Float -> Float -> Float
+            -- mdy r y = r / (my - y)
 
             -- md : Float -> Float -> Float
             -- md x y = sqrt (sqr (x - mx) + sqr (y - my))
@@ -141,6 +141,8 @@ update msg ({m,ws,balls} as model)
               --       , vy = vy - (t * g / r) 
               --       }
 
+              -- TODO: x and y should probably be percentages -- it'll make everything so much easier
+
               = case ( abs y >= flor - r, abs x >= wall - r ) of
 
                   ( True, _ ) ->
@@ -148,8 +150,8 @@ update msg ({m,ws,balls} as model)
                     {  r = r
                     ,  x = ( vx * t ) + x |> clamp (    r + negate wall) (wall - r    )
                     ,  y = ( vy * t ) + y |> clamp (1 + r + negate flor) (flor - r - 1)
-                    , vx = vx
-                    , vy = (vy * -1) - (t * g / r) - fr
+                    , vx = vx - (t * g / r) 
+                    , vy = (vy * -1) + fr
                     }
 
                   ( _, True ) ->
@@ -157,8 +159,8 @@ update msg ({m,ws,balls} as model)
                     {  r = r
                     ,  x = ( vx * t ) + x |> clamp (1 + r + negate wall) (wall - r - 1)
                     ,  y = ( vy * t ) + y |> clamp (    r + negate flor) (flor - r    )
-                    , vx = ( vx + fr ) * -1
-                    , vy = vy - (t * g / r)
+                    , vx = (( vx + fr ) * -1) + (t * g / r)
+                    , vy = vy
                     }
 
                   ( _, _ ) ->
@@ -166,8 +168,8 @@ update msg ({m,ws,balls} as model)
                     {  r = r
                     ,  x = ( vx * t ) + x |> clamp (r + negate wall) (wall - r)
                     ,  y = ( vy * t ) + y |> clamp (r + negate flor) (flor - r)
-                    , vx = vx
-                    , vy = vy - (t * g / r) 
+                    , vx = vx + (t * g / r) 
+                    , vy = vy
                     }
 
         in { model | balls = balls |> map baller } ! []
@@ -184,10 +186,10 @@ update msg ({m,ws,balls} as model)
           , balls = range 25 50
                   |> map toFloat
                   |> map3 (\m q n -> {  r = n
-                                   ,  x = (toFloat width / 25 * toFloat m) - (toFloat width / 2.0)
-                                   ,  y = toFloat height / 2.0
-                                   , vx = q - 5 |> toFloat
-                                   , vy = 0.0
+                                   ,  x = negate <| toFloat width / 2.0
+                                   ,  y = (toFloat height / 25 * toFloat m) - (toFloat height / 2.0)
+                                   , vx = 0.0
+                                   , vy = q - 5 |> toFloat
                                    })
                          (range 1 100)
                          (range 1 100 |> map toFloat |> map ((*) 2.8572385795) |> map floor |> map (flip (%) 20))
@@ -264,7 +266,7 @@ specialties model
   --   ]
   = [ interactiveDesign model
     , systemsArchitecture
-    , branding
+    , branding model
     , webDevelopment
     , research
     ]
@@ -274,11 +276,11 @@ interactiveDesign ({ws,balls} as model)
   = hero { heroModifiers | color = Info, size = FullHeight }
     [ id "design" ]
     [ heroBody [ style [ "z-index" => "2" ] ]
-      [ container []
+      [ container [ style [] ]
         <| easyTitleWithSubtitle False H1
           [ icon Modifiers.Large [] [ magic ], text " Interactive Design" ]
           [ text "We create engaging experiences." ]
-       ++ [ content Modifiers.Large []
+       ++ [ content Modifiers.Medium []
             [ blockquote [ style [ "color" => "#F5F5F5", "background-color" => "rgba(0,0,0,0)" ] ]
               [ text "Any product that needs a manual to work is broken."
               , br [] []
@@ -298,21 +300,61 @@ ballpit : Window.Size -> List Ball -> Html Msg
 ballpit {width,height} balls
   = Element.toHtml
   <| collage width height
-  <| map (\{r,x,y} -> circle r |> filled yellow |> move (x, y))
+  <| map (\{r,x,y} -> circle r |> filled (rgba 255 221 87 ((toFloat width / 2 + x - 0.25) / toFloat width)) |> move (x, y))
+  -- <| map (\{r,x,y} -> circle r |> filled (rgba 255 221 87 (abs y / (toFloat height / 2))) |> move (x, y))
   <| balls
     
     
-branding : Html Msg
-branding
+branding : Model -> Html Msg
+branding ({ws,balls} as model)
   = hero { heroModifiers | color = Warning, size = FullHeight } []
-    [ heroBody []
+    [ heroBody [ style [ "z-index" => "2" ] ]
       [ container []
         <| easyTitleWithSubtitle False H1
           [ icon Modifiers.Large [] [ heart ], text " Branding" ]
           [ text "We make companies memorable." ]
+       ++ [ content Modifiers.Medium []
+            [ -- blockquote [ style [ "border-color" => "rgba(74,74,74,0.6)", "color" => "#4a4a4a", "background-color" => "rgba(0,0,0,0)" ] ]
+              -- [ text "Is it really "
+              -- , em [] [ text "complex" ]
+              -- , text "? Or did we just make it "
+              -- , em [] [ text "complicated" ]
+              -- , text "?"
+              -- , br [] []
+              -- , br [] []
+              -- , span [ style [ "opacity" => "0.85" ] ] [ text "- Alan Kay" ]
+              -- ]
+              p [ style [ "max-width" => "500px" ] ]
+              [ text "Consequatur nihil aut esse. Libero impedit et autem aut dicta dolore at voluptas. Necessitatibus ducimus autem sapiente amet ad repellat animi."
+              ]
+            , p [ style [ "max-width" => "500px" ] ]
+              [ text "Unde ad ad omnis saepe quas. Magni et aut rem cumque voluptatem architecto quia et. Omnis voluptatem autem nihil rerum. Et dignissimos consectetur dolor consequatur rerum minus sit. Aperiam ut optio praesentium accusantium."
+              ]
+            ]
+          ]
       ]
+    -- , div [ style [ "position" => "absolute", "z-index" => "1" ] ]
+    --   [ monument ws balls
+    --   ] 
     ]
-    
+
+-- monument : Window.Size -> List Ball -> Html Msg
+-- monument {width,height} balls
+--   = Element.toHtml
+--   <| collage width height
+--   <| map (\{r,x,y} ->
+--           -- ngon (floor r // 5) ((x / toFloat width) * r / 50 * (max (toFloat height) (toFloat width)))
+--           ngon 5 (x + (toFloat width / 2))
+--           |> outlined { defaultLine | color = rgba 50 50 50 (0.8 - (((toFloat width / 2) + x) / toFloat width)), width = 3 }
+--           |> rotate (4 * y / toFloat height)
+--           |> move (toFloat width / 2,0))
+--   <| List.drop 15
+--   -- <| ls
+--   -- <| polygon
+--   -- <| map (\(x,y) -> (x * 100, y * 100))
+--   -- <| map fromPolar
+--   -- <| map (\{x,y} -> (x / 100, y / 100))
+--   <| balls
 
 systemsArchitecture : Html Msg
 systemsArchitecture
@@ -320,10 +362,10 @@ systemsArchitecture
     [ heroBody []
       [ container []
         <| easyTitleWithSubtitle False H1
-          [ icon Modifiers.Large [] [ cubes ], text " Systems Architecture" ]
+          [ icon Modifiers.Large [] [ cubes ], text " Software Architecture" ]
           [ text "We grow scalable systems." ]
-       ++ [ content Modifiers.Large []
-            [ blockquote []
+       ++ [ content Modifiers.Medium []
+            [ blockquote [ style [ "background-color" => "rgba(0,0,0,0)" ] ]
               [ text "Is it really "
               , em [] [ text "complex" ]
               , text "? Or did we just make it "
@@ -339,13 +381,11 @@ systemsArchitecture
             , p [ style [ "max-width" => "500px" ] ]
               [ text "Unde ad ad omnis saepe quas. Magni et aut rem cumque voluptatem architecto quia et. Omnis voluptatem autem nihil rerum. Et dignissimos consectetur dolor consequatur rerum minus sit. Aperiam ut optio praesentium accusantium."
               ]
-            , p [ style [ "max-width" => "500px" ] ]
-              [ text "Ipsam et quas aperiam facilis facere possimus. Voluptate suscipit tempora quo cupiditate reiciendis. Itaque earum voluptates explicabo. Aspernatur quam aut voluptatum nisi enim quia non."
-              ]
             ]
           ]
       ]
     ]
+  -- TODO: make a mesh that "waves" very slightly
 
 webDevelopment : Html Msg
 webDevelopment
@@ -355,14 +395,7 @@ webDevelopment
         <| easyTitleWithSubtitle False H1
           [ icon Modifiers.Large [] [ code ], text " Software Development" ]
           [ text "We build elegant software." ]
-       -- ++ [ content Modifiers.Medium []
-       --      [ p []
-       --        [ text "lorem ipsum"
-       --          -- TODO: functional
-       --          -- TODO: web
-       --        ]
-       --      ]
-       --    ]
+        -- TODO: language logos
       ]
     ]
 -- TODO: engineering specialties
@@ -380,8 +413,11 @@ research
           [ icon Modifiers.Large [] [ flask ], text "Research" ]
           [ text "We solve problems." ]
        ++ [ content Modifiers.Medium []
-            [ p []
-              [ text "lorem ipsum"
+            [ p [ style [ "max-width" => "500px" ] ]
+              [ text "Consequatur nihil aut esse. Libero impedit et autem aut dicta dolore at voluptas. Necessitatibus ducimus autem sapiente amet ad repellat animi."
+              ]
+            , p [ style [ "max-width" => "500px" ] ]
+              [ text "Unde ad ad omnis saepe quas. Magni et aut rem cumque voluptatem architecto quia et. Omnis voluptatem autem nihil rerum. Et dignissimos consectetur dolor consequatur rerum minus sit. Aperiam ut optio praesentium accusantium."
               ]
             ]
           ]
