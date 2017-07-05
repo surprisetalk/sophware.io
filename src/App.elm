@@ -379,7 +379,10 @@ interactiveDesign : Model -> Html Msg
 interactiveDesign ({ws,balls} as model)
   = hero { heroModifiers | color = Info, size = FullHeight }
     [ id "design" ]
-    [ heroBody [ style [ "z-index" => "2" ] ]
+    [ div [ style [ "position" => "absolute", "z-index" => "1" ] ]
+      [ ballpit ws balls
+      ] 
+    , heroBody [ style [ "z-index" => "2" ] ]
       [ container [ style [] ]
         <| easyTitleWithSubtitle False H1
           [ icon Modifiers.Large [] [ Html.i [ class "fa fa-th" ] [] ], text " UX Design" ]
@@ -396,9 +399,6 @@ interactiveDesign ({ws,balls} as model)
           , learnMore { buttonModifiers | color = Info, size = Modifiers.Large, inverted = True, outlined = True }
           ]
       ]
-    , div [ style [ "position" => "absolute", "z-index" => "1" ] ]
-      [ ballpit ws balls
-      ] 
     ]
   -- TODO: mouse over / tilt red balls
 
@@ -631,7 +631,10 @@ webDevelopment
 research : Model -> Html Msg
 research ({scroll,ws,mesh} as model)
   = hero { heroModifiers | color = Info, size = FullHeight } [ id "research" ]
-    [ heroBody [ style [ "z-index" => "2" ] ]
+    [ div [ style [ "position" => "absolute", "z-index" => "1" ] ]
+      [ web model
+      ] 
+    , heroBody [ style [ "z-index" => "2" ] ]
       [ container []
         <| easyTitleWithSubtitle False H1
           [ icon Modifiers.Large [] [ flask ], text "Research" ]
@@ -648,9 +651,6 @@ research ({scroll,ws,mesh} as model)
           , learnMore { buttonModifiers | color = Info, size = Modifiers.Large, inverted = True, outlined = True }
           ]
       ]
-    , div [ style [ "position" => "absolute", "z-index" => "1" ] ]
-      [ web model
-      ] 
     ]
     -- TODO: multiline columns? tiles?
     -- TODO:   mathematics
