@@ -550,6 +550,10 @@ web {scroll,ws,mesh,heights}
       |> triples
       |> map (polygon >> outlined (solid (rgba 0 209 178 0.8)))
     -- , mesh
+    --   |> map (\{d,x,y} -> (toFloat ws.width * x / 2, (d * (heights.research - scroll) / 3) + (toFloat ws.height * y) / 2))
+    --   |> triples
+    --   |> map (polygon >> filled (rgba 50 115 220 1))
+    -- , mesh
     --   |> List.drop 1
     --   |> map (\(x,y) -> (toFloat width * x / 2, toFloat height * y / 2))
     --   |> triples
