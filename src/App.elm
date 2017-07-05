@@ -1,5 +1,5 @@
 
-module App exposing (..)
+port module App exposing (..)
 
 -- TODO: we should really have, like, a step-by-step project calculator
 
@@ -28,7 +28,7 @@ import AnimationFrame
 
 import Window
 
-import Mouse exposing ( Position, moves )
+-- import Mouse exposing ( Position, moves )
 
 import List exposing ( map, map3, concat, intersperse, range )
 
@@ -39,6 +39,11 @@ import Color exposing ( rgba, yellow )
 import Time exposing ( Time, inMilliseconds )
 
 import Random exposing ( generate, list, pair, float )
+
+
+-- PORTS -----------------------------------------------------------------------
+
+-- TODO: scroll
 
 
 -- HEPLERS ---------------------------------------------------------------------
@@ -67,7 +72,12 @@ type alias Attrs msg = List (Attribute msg)
 
 type alias Ball = { r : Float, x : Float, y : Float, vx : Float, vy : Float }
 
-type alias Model = { m : Position, ws : Window.Size, balls : List Ball, mesh : List (Float,Float) }
+type alias Point = { d : Float, x : Float, y : Float }
+
+type alias Position = { x : Int, y : Int }
+
+-- type alias Model = { m : Position, ws : Window.Size, balls : List Ball, mesh : List (Float,Float) }
+type alias Model = { m : Position, ws : Window.Size, balls : List Ball, mesh : List Point }
 
 
 init : String -> ( Model, Cmd Msg )
@@ -80,16 +90,21 @@ init path
     , mesh  = []
     }
     ! [ Window.size |> perform WindowSize
-      , generate MeshUpdate <| list 600 <| pair (float -1 1) (float -1 1)
+      , generate MeshUpdate
+        <| list 600
+        <| Random.map3 Point
+          (float -1 1)
+          (float -1 1)
+          (float -1 1)
       ]
 
 
 -- MSG -------------------------------------------------------------------------
 
 type Msg = NoOp
-         | MeshUpdate (List (Float,Float))
+         | MeshUpdate (List Point)
          | TimeUpdate Time
-         | MouseUpdate Position
+         -- | MouseUpdate Position
          | WindowSize Window.Size
          | WindowResize Window.Size
 
@@ -102,17 +117,17 @@ update msg ({m,ws,balls,mesh} as model)
 
       MeshUpdate xs ->
 
-        let distance : (Float,Float) -> (Float,Float) -> Float
-            distance (x1,y1) (x2,y2)
-              = sqrt <| sqr (x2 - x1) + sqr (y2 - y1)
+        let distance : Point -> Point -> Float
+            distance p1 p2
+              = sqrt <| sqr (p2.x - p1.x) + sqr (p2.y - p1.y)
 
-            sorter_ : (Float,Float) -> List (Float,Float) -> List (Float,Float)
+            sorter_ : Point -> List Point -> List Point
             sorter_ p ps
               = case List.sortBy (distance p) ps of
                   []      -> p :: []
                   q :: qs -> p :: sorter_ q qs
 
-            sorter :  List (Float,Float) -> List (Float,Float)
+            sorter :  List Point -> List Point
             sorter ps
               = case ps of
                   []      -> []
@@ -120,14 +135,14 @@ update msg ({m,ws,balls,mesh} as model)
 
         in { model | mesh = xs |> sorter } ! []
 
-      MouseUpdate pos ->
+      -- MouseUpdate pos ->
 
-        -- TODO: mouse is pretty intense! let's replace this with scroll
+      --   -- TODO: mouse is pretty intense! let's replace this with scroll
 
-        { model
-          | m = pos
-          , mesh  = mesh  |> List.indexedMap (\i (x,y) -> ((-1 ^ toFloat i) * sin (toFloat m.x) * 0.001 + x, (-1 ^ toFloat i) * cos (toFloat m.y) * 0.001 + y))
-        } ! []
+      --   { model
+      --     | m = pos
+      --     , mesh  = mesh  |> List.indexedMap (\i (x,y) -> ((-1 ^ toFloat i) * sin (toFloat m.x) * 0.001 + x, (-1 ^ toFloat i) * cos (toFloat m.y) * 0.001 + y))
+      --   } ! []
 
       TimeUpdate time ->
 
@@ -504,7 +519,7 @@ automation ({ws,balls} as model)
 --     (10 ^ 16 * pi |> toString |> String.split "" |> map String.toInt |> map (Result.withDefault 0) |> map toFloat |> map (flip (/) 10.0))
 --     (10 ^ 16 * e |> toString |> String.split "" |> map String.toInt |> map (Result.withDefault 0) |> map toFloat |> map (flip (/) 10.0))
 
-web : Window.Size -> List (Float,Float) -> Html Msg
+web : Window.Size -> List Point -> Html Msg
 web {width,height} mesh
   = Element.toHtml
   <| collage width height
@@ -512,7 +527,7 @@ web {width,height} mesh
     -- [ mesh
     --   |> map (\(x,y) -> circle 5 |> filled (rgba 0 209 178 0.8) |> move (toFloat width * x / 2, toFloat height * y / 2))
     [ mesh
-      |> map (\(x,y) -> (toFloat width * x / 2, toFloat height * y / 2))
+      |> map (\{x,y} -> (toFloat width * x / 2, toFloat height * y / 2))
       |> triples
       |> map (polygon >> outlined (solid (rgba 0 209 178 0.8)))
     -- , mesh
@@ -803,7 +818,7 @@ main
         , subscriptions = \model -> Sub.batch
                           [ Window.resizes WindowResize
                           , AnimationFrame.diffs TimeUpdate
-                          , Mouse.moves MouseUpdate
+                          -- , Mouse.moves MouseUpdate
                           ]
         }
 
