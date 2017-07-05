@@ -30,6 +30,8 @@ import Window
 
 -- import Mouse exposing ( Position, moves )
 
+import Scroll exposing (..)
+
 import List exposing ( map, map3, concat, intersperse, range )
 
 import Task exposing ( perform )
@@ -43,7 +45,9 @@ import Random exposing ( generate, list, pair, float )
 
 -- PORTS -----------------------------------------------------------------------
 
--- TODO: scroll
+port scroll : (Move -> msg) -> Sub msg
+
+port researchHeight : (Float -> msg) -> Sub msg
 
 
 -- HEPLERS ---------------------------------------------------------------------
@@ -76,26 +80,31 @@ type alias Point = { d : Float, x : Float, y : Float }
 
 type alias Position = { x : Int, y : Int }
 
+type alias Heights = { research : Float }
+
 -- type alias Model = { m : Position, ws : Window.Size, balls : List Ball, mesh : List (Float,Float) }
-type alias Model = { m : Position, ws : Window.Size, balls : List Ball, mesh : List Point }
+type alias Model = { scroll : Float, m : Position, ws : Window.Size, balls : List Ball, mesh : List Point, heights : Heights }
 
 
 init : String -> ( Model, Cmd Msg )
-init path
+init _
   = { m = { x = 0, y = 0 }
     , ws = { width  = 1920
            , height = 1080
            }
-    , balls = []
-    , mesh  = []
+    , balls  = []
+    , mesh   = []
+    , scroll = 0
+    , heights = { research = 0
+                }
     }
     ! [ Window.size |> perform WindowSize
       , generate MeshUpdate
-        <| list 600
+        <| list 300
         <| Random.map3 Point
-          (float -1 1)
-          (float -1 1)
-          (float -1 1)
+          (float  0.5 1)
+          (float -1.0 1)
+          (float -1.0 1)
       ]
 
 
@@ -104,16 +113,26 @@ init path
 type Msg = NoOp
          | MeshUpdate (List Point)
          | TimeUpdate Time
+         | ScrollUpdate Move
          -- | MouseUpdate Position
          | WindowSize Window.Size
          | WindowResize Window.Size
+         | ResearchHeightUpdate Float
 
 
 -- UPDATE ----------------------------------------------------------------------
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg ({m,ws,balls,mesh} as model)
+update msg ({m,ws,balls,mesh,heights} as model)
   = case msg of
+
+      ResearchHeightUpdate h ->
+
+        { model | heights = { heights | research = h } } ! []
+
+      ScrollUpdate (_,to) ->
+
+        { model | scroll = to } ! []
 
       MeshUpdate xs ->
 
@@ -519,15 +538,15 @@ automation ({ws,balls} as model)
 --     (10 ^ 16 * pi |> toString |> String.split "" |> map String.toInt |> map (Result.withDefault 0) |> map toFloat |> map (flip (/) 10.0))
 --     (10 ^ 16 * e |> toString |> String.split "" |> map String.toInt |> map (Result.withDefault 0) |> map toFloat |> map (flip (/) 10.0))
 
-web : Window.Size -> List Point -> Html Msg
-web {width,height} mesh
+web : Model -> Html Msg
+web {scroll,ws,mesh,heights}
   = Element.toHtml
-  <| collage width height
+  <| collage ws.width ws.height
   <| concat
     -- [ mesh
     --   |> map (\(x,y) -> circle 5 |> filled (rgba 0 209 178 0.8) |> move (toFloat width * x / 2, toFloat height * y / 2))
     [ mesh
-      |> map (\{x,y} -> (toFloat width * x / 2, toFloat height * y / 2))
+      |> map (\{d,x,y} -> (toFloat ws.width * x / 2, (d * (heights.research - scroll) / 3) + (toFloat ws.height * y) / 2))
       |> triples
       |> map (polygon >> outlined (solid (rgba 0 209 178 0.8)))
     -- , mesh
@@ -605,8 +624,8 @@ webDevelopment
 -- TODO:   architecture/engineering
 
 research : Model -> Html Msg
-research ({ws,mesh} as model)
-  = hero { heroModifiers | color = Info, size = FullHeight } []
+research ({scroll,ws,mesh} as model)
+  = hero { heroModifiers | color = Info, size = FullHeight } [ id "research" ]
     [ heroBody [ style [ "z-index" => "2" ] ]
       [ container []
         <| easyTitleWithSubtitle False H1
@@ -625,7 +644,7 @@ research ({ws,mesh} as model)
           ]
       ]
     , div [ style [ "position" => "absolute", "z-index" => "1" ] ]
-      [ web ws mesh
+      [ web model
       ] 
     ]
     -- TODO: multiline columns? tiles?
@@ -819,6 +838,8 @@ main
                           [ Window.resizes WindowResize
                           , AnimationFrame.diffs TimeUpdate
                           -- , Mouse.moves MouseUpdate
+                          , scroll ScrollUpdate
+                          , researchHeight ResearchHeightUpdate
                           ]
         }
 
