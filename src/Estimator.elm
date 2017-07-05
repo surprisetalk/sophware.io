@@ -1,5 +1,5 @@
 
-module Estimator exposing ( Estimate, init, view )
+module Estimator exposing ( Estimator, init, view )
 
 -- TODO: at the end, we should have upfront & monthly totals (eg maintenance)
 
@@ -21,6 +21,8 @@ module Estimator exposing ( Estimate, init, view )
 -- TODO: at the end, give an easy/hard breakdown for all the options they picked, and realistic expectations
 
 -- TODO: "think your project is 'too hard'? we'll do a double-or-nothing wager!"
+
+-- TODO: where would UX consulting fit in here?
 
 {-
 
@@ -50,13 +52,15 @@ module Estimator exposing ( Estimate, init, view )
 
 -- IMPORTS ---------------------------------------------------------------------
 
+import Html exposing ( div )
+
 
 -- HELPERS ---------------------------------------------------------------------
 
 
--- ESTIMATE --------------------------------------------------------------------
+-- ESTIMATOR -------------------------------------------------------------------
 
-type alias Estimate
+type alias Estimator
   = { project     : Maybe Project
     , impossible  : Maybe Bool
       -- TODO: "impossible" discount? haha
@@ -96,13 +100,11 @@ type Project = ProjectApp         App
              | ProjectImprovement Improvement
              | ProjectBranding    Branding
              | ProjectResearch    Research
-             | ProjectAutomation  Automation
+             | ProjectAutomation  
              | ProjectOther
 
 
 -- APP -------------------------------------------------------------------------
-
--- TODO: we can do presets like "blog", "store", and "portfolio"
 
 -- TODO: they should have a clear path to "rigorous" AI-type projects
 
@@ -111,43 +113,48 @@ type alias App
     , size       : Maybe Scale
     , quality    : Maybe Scale
     , importance : Maybe Scale
+    , hosting    : Maybe Nod
     , category   : Maybe AppCategory
+    , features   : Maybe AppFeatures
     , branding   : Maybe Branding
     }
 
-type Platform = Mobile Mobile
-              | Web    Web
+type Platform = PlatformMobile Mobile
+              | PlatformWeb
 
 type AppCategory
 -- TODO: each of these should have unique admin options
 -- TODO: we may want to mov AppFeatures down into each alias record
-  = Blog_      AppFeatures Blog
-  | Store_     AppFeatures Store
-  | Portfolio_ AppFeatures Portfolio
-  | Service_   AppFeatures Service
-  | Game_      AppFeatures
-               AdvancedApp Service
-  | Advanced_  AdvancedApp Service
-  | Other_     AppFetaures Blog
-                           Store
-                           Portfolio
-                           Service
-                           AdvancedApp
+  = Blog_      Blog
+  | Store_     Store
+  | Portfolio_ Portfolio
+  | Game_      Game
+  | Service_   Service
+  | Advanced_  Service AdvancedApp 
+  | Other_     Blog
+               Store
+               Portfolio
+               Service
+               Game
+               AdvancedApp
 
 type alias AppFeatures
-  = { accounts     : Maybe AppAccounts
+  = { quick        : Maybe Bool -- 30-second version or 5-minute version?
+    , design       : Maybe Scale
+    , accounts     : Maybe AppAccounts
     , email        : Maybe AppEmail
     , search       : Maybe AppSearch
     , content      : Maybe AppContent
     , social       : Maybe AppSocial
     , commerce     : Maybe AppCommerce
     , external     : Maybe AppExternal
+    , database     : Maybe AppDatabase
     , security     : Maybe Scale
+    , integrations : Maybe Nod
     , contact      : Maybe Nod
     , management   : Maybe Nod
     , maintenance  : Maybe Nod
     , analytics    : Maybe Nod
-      -- TODO: this is where we weed out the "idea" people
     }
 
 type AppAccounts = SocialAccount
@@ -165,6 +172,7 @@ type AppSearch = SimpleSearch
                | NoSearch
   
 type alias AppContent
+-- TODO: do we need to provide content?
   = { copy     : Maybe Nod
     , images   : Maybe Nod
     , graphics : Maybe Nod
@@ -189,19 +197,64 @@ type alias AppExternal
     , sms       : Maybe Nod
     }
 
-type alias AppAdvanced
-  -- TODO: break these up into advanced and service
-  -- TODO: give some of these a "fun" discount
-  = { hardCamera      : Maybe Nod
-    , imageProcessing : Maybe Nod
+type AppDatabase
+  = NewDatabase
+  | ExistingDatabase
+  | CloudDatabase
+  | NoDatabase
+  | WhatDatabase
+
+type alias Mobile
+  = { connect : Maybe Nod -- do people need to connect to your website?
+    , icon    : Maybe Nod
+    , push    : Maybe Nod
+    }
+
+type alias Blog
+  = { cms      : Maybe Nod
+    , comments : Maybe Nod
+    }
+
+type alias Store
+  = { admin    : Maybe Nod
+    , reviews  : Maybe Nod
+    }
+
+type alias Portfolio
+  = { cms : Maybe Nod
+    }
+
+type alias Service
+-- TODO: "buzzwords"
+  = { imageProcessing : Maybe Nod
     , bigData         : Maybe Nod
     , cloudStorage    : Maybe Nod
-    , academic        : Maybe Nod
+    }
+
+type alias AdvancedApp
+-- TODO: give some of these a "fun" discount
+  = { academic        : Maybe Nod
+    , simulations     : Maybe Nod
     , textAnalysis    : Maybe Nod
+    , ai              : Maybe Nod
     , iot             : Maybe Nod
     , parallelism     : Maybe Nod
-    , metaProgramming : Maybe Nod
+    , metaprogramming : Maybe Nod
+    , blockchain      : Maybe Nod
     }
+
+type alias Game
+  = { vr             : GameGraphics
+    , inAppPurchases : Maybe Nod
+    , multiplayer    : Maybe Nod
+    }
+
+type GameGraphics
+  = Graphics2D
+  | Graphics3D
+  | GraphicsAR
+  | GraphicsVR
+  
 
 
 -- APP -------------------------------------------------------------------------
@@ -357,10 +410,161 @@ type Presentation
   | Article
   | Other
 
+
+-- AUTOMATION ------------------------------------------------------------------
+
+-- TODO: in the beginning, we may want to just explain what it is, and then give the contact form
+
       
 -- INIT ------------------------------------------------------------------------
+
+init : Estimator
+init
+  = { project     = Nothing
+    , impossible  = Nothing
+    , urgency     = Nothing
+    , nonProfit   = Nothing
+    , paymentPlan = Nothing
+    }
+
+
+-- ESTIMATE --------------------------------------------------------------------
+
+type alias Estimate
+-- TODO: add uncertainty metric?
+  = { 
+    }
+
+type EstimateVal
+-- TODO: add uncertainty metric?
+  = Naught
+  | Add      Int
+  | Sub      Int
+  | Discount Float
+  | Multiply Float
+
+estimate : Estimator -> Estimate
+estimate {project,impossible,urgency,nonProfit,paymentPlan}
+  = { impossible
+        = case impossible of
+            Nothing    -> Naught
+            Just True  -> Sub 250
+            Just False -> Naught
+    , urgency
+        = case urgency of
+            Nothing          -> Naught
+            Just Yesterday   -> Multiply 100
+            Just Today       -> Multiply 10
+            Just ThisWeek    -> Multiply 4
+            Just ThisMonth   -> Naught
+            Just ThisQuarter -> Naught
+            Just ThisYear    -> Naught
+            Just ThisDecade  -> Discount 0.05
+            Just Never       -> Multiply 0
+    , nonProfit
+        = case nonProfit of
+            Nothing    -> Naught
+            Just No    -> Naught
+            Just Yes   -> Discount 0.05
+            Just Dunno -> Naught
+    , project
+        = case project of
+
+            ProjectApp app -> 
+
+            ProjectImprovement improvement -> 
+
+            ProjectBranding {new,logo,social,content,guide,strategy,marketing,website,management} -> 
+
+              { new
+                  = case new of
+                      Nothing    -> 
+                      Just True  -> 
+                      Just False -> 
+              , logo
+                  = case logo of
+                      Nothing    ->
+                      Just No    ->
+                      Just Yes   ->
+                      Just Dunno ->
+              , social
+                  = case social of
+                      Nothing    ->
+                      Just No    ->
+                      Just Yes   ->
+                      Just Dunno ->
+              , guide
+                  = case guide of
+                      Nothing    ->
+                      Just No    ->
+                      Just Yes   ->
+                      Just Dunno ->
+              , strategy
+                  = case strategy of
+                      Nothing    ->
+                      Just No    ->
+                      Just Yes   ->
+                      Just Dunno ->
+              , marketing
+                  = case marketing of
+                      Nothing    ->
+                      Just No    ->
+                      Just Yes   ->
+                      Just Dunno ->
+              , website
+                  = case website of
+                      Nothing     ->
+                      Just None   ->
+                      Just Low    ->
+                      Just Medium ->
+                      Just High   ->
+              , management
+                  = case management of
+                      Nothing    ->
+                      Just No    ->
+                      Just Yes   ->
+                      Just Dunno ->
+              , content
+                  = { copy
+                        = case copy of
+                            Nothing     ->
+                            Just None   ->
+                            Just Low    ->
+                            Just Medium ->
+                            Just High   ->
+                    , images
+                        = case images of
+                            Nothing     ->
+                            Just None   ->
+                            Just Low    ->
+                            Just Medium ->
+                            Just High   ->
+                    , video
+                        = case video of
+                            Nothing     ->
+                            Just None   ->
+                            Just Low    ->
+                            Just Medium ->
+                            Just High   ->
+                    }
+              }
+
+        ProjectResearch -> 
+
+        ProjectAutomation -> 
+
+          EstimateAutomation
+
+        ProjectOther ->
+
+          EstimateOther
+
+    }
 
 
 -- VIEW ------------------------------------------------------------------------
 
+-- view : Estimator -> Html msg
+-- view est
+--   = 
 

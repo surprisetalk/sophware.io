@@ -404,6 +404,7 @@ interactiveDesign ({ws,balls} as model)
 
 ballpit : Window.Size -> List Ball -> Html Msg
 ballpit {width,height} balls
+-- TODO: parallax
   = Element.toHtml
   <| collage width height
   <| map (\{r,x,y} -> circle r |> filled (rgba 255 221 87 ((toFloat width / 2 + x - 0.25) / toFloat width)) |> move (x, y))
