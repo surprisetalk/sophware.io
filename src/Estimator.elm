@@ -52,7 +52,7 @@ module Estimator exposing ( Estimator, init, view )
 
 -- IMPORTS ---------------------------------------------------------------------
 
-import Html exposing ( div )
+import Html exposing (..)
 
 
 -- HELPERS ---------------------------------------------------------------------
@@ -432,7 +432,10 @@ init
 
 type alias Estimate
 -- TODO: add uncertainty metric?
-  = { 
+  = { impossible : EstimateVal
+    , urgency    : EstimateVal
+    , nonProfit  : EstimateVal
+    , project    : EstimateProject
     }
 
 type EstimateVal
@@ -442,6 +445,26 @@ type EstimateVal
   | Sub      Int
   | Discount Float
   | Multiply Float
+
+type EstimateProject
+  = EstimateBranding_ EstimateBranding
+  | EstimateAutomation_
+  | EstimateOther_
+
+type alias EstimateBranding
+  = { new        : EstimateVal
+    , logo       : EstimateVal
+    , social     : EstimateVal
+    , guide      : EstimateVal
+    , strategy   : EstimateVal
+    , marketing  : EstimateVal
+    , website    : EstimateVal
+    , management : EstimateVal
+    , content    : { copy   : EstimateVal
+                   , images : EstimateVal
+                   , video  : EstimateVal
+                   }
+    }
 
 estimate : Estimator -> Estimate
 estimate {project,impossible,urgency,nonProfit,paymentPlan}
@@ -457,9 +480,9 @@ estimate {project,impossible,urgency,nonProfit,paymentPlan}
             Just Today       -> Multiply 10
             Just ThisWeek    -> Multiply 4
             Just ThisMonth   -> Naught
-            Just ThisQuarter -> Naught
-            Just ThisYear    -> Naught
-            Just ThisDecade  -> Discount 0.05
+            Just ThisQuarter -> Discount 0.01
+            Just ThisYear    -> Discount 0.05
+            Just ThisDecade  -> Discount 0.25
             Just Never       -> Multiply 0
     , nonProfit
         = case nonProfit of
@@ -470,101 +493,113 @@ estimate {project,impossible,urgency,nonProfit,paymentPlan}
     , project
         = case project of
 
-            ProjectApp app -> 
+            -- ProjectApp app -> 
 
-            ProjectImprovement improvement -> 
+            -- ProjectImprovement improvement -> 
 
-            ProjectBranding {new,logo,social,content,guide,strategy,marketing,website,management} -> 
+            Just (ProjectBranding {new,logo,social,content,guide,strategy,marketing,website,management}) -> 
 
+              EstimateBranding_
               { new
                   = case new of
-                      Nothing    -> 
-                      Just True  -> 
-                      Just False -> 
+                      Nothing    -> Naught
+                      Just True  -> Naught
+                      Just False -> Naught
               , logo
                   = case logo of
-                      Nothing    ->
-                      Just No    ->
-                      Just Yes   ->
-                      Just Dunno ->
+                      Nothing    -> Naught
+                      Just No    -> Naught
+                      Just Yes   -> Naught
+                      Just Dunno -> Naught
               , social
                   = case social of
-                      Nothing    ->
-                      Just No    ->
-                      Just Yes   ->
-                      Just Dunno ->
+                      Nothing    -> Naught
+                      Just No    -> Naught
+                      Just Yes   -> Naught
+                      Just Dunno -> Naught
               , guide
                   = case guide of
-                      Nothing    ->
-                      Just No    ->
-                      Just Yes   ->
-                      Just Dunno ->
+                      Nothing    -> Naught
+                      Just No    -> Naught
+                      Just Yes   -> Naught
+                      Just Dunno -> Naught
               , strategy
                   = case strategy of
-                      Nothing    ->
-                      Just No    ->
-                      Just Yes   ->
-                      Just Dunno ->
+                      Nothing    -> Naught
+                      Just No    -> Naught
+                      Just Yes   -> Naught
+                      Just Dunno -> Naught
               , marketing
                   = case marketing of
-                      Nothing    ->
-                      Just No    ->
-                      Just Yes   ->
-                      Just Dunno ->
+                      Nothing    -> Naught
+                      Just No    -> Naught
+                      Just Yes   -> Naught
+                      Just Dunno -> Naught
               , website
                   = case website of
-                      Nothing     ->
-                      Just None   ->
-                      Just Low    ->
-                      Just Medium ->
-                      Just High   ->
+                      Nothing     -> Naught
+                      Just None   -> Naught
+                      Just Low    -> Naught
+                      Just Medium -> Naught
+                      Just High   -> Naught
               , management
                   = case management of
-                      Nothing    ->
-                      Just No    ->
-                      Just Yes   ->
-                      Just Dunno ->
+                      Nothing    -> Naught
+                      Just No    -> Naught
+                      Just Yes   -> Naught
+                      Just Dunno -> Naught
               , content
-                  = { copy
-                        = case copy of
-                            Nothing     ->
-                            Just None   ->
-                            Just Low    ->
-                            Just Medium ->
-                            Just High   ->
-                    , images
-                        = case images of
-                            Nothing     ->
-                            Just None   ->
-                            Just Low    ->
-                            Just Medium ->
-                            Just High   ->
-                    , video
-                        = case video of
-                            Nothing     ->
-                            Just None   ->
-                            Just Low    ->
-                            Just Medium ->
-                            Just High   ->
-                    }
+                  = case content of
+
+                      Nothing ->
+
+                        { copy   = Naught
+                        , images = Naught
+                        , video  = Naught
+                        }
+                        
+                      Just content ->
+
+                        { copy
+                            = case content.copy of
+                                Nothing     -> Naught
+                                Just None   -> Naught
+                                Just Low    -> Naught
+                                Just Medium -> Naught
+                                Just High   -> Naught
+                        , images
+                            = case content.images of
+                                Nothing     -> Naught
+                                Just None   -> Naught
+                                Just Low    -> Naught
+                                Just Medium -> Naught
+                                Just High   -> Naught
+                        , video
+                            = case content.video of
+                                Nothing     -> Naught
+                                Just None   -> Naught
+                                Just Low    -> Naught
+                                Just Medium -> Naught
+                                Just High   -> Naught
+                        }
               }
 
-        ProjectResearch -> 
+            -- ProjectResearch -> 
 
-        ProjectAutomation -> 
+            Just ProjectAutomation -> 
 
-          EstimateAutomation
+              EstimateAutomation_
 
-        ProjectOther ->
+            _ ->
 
-          EstimateOther
+              EstimateOther_
 
     }
 
 
 -- VIEW ------------------------------------------------------------------------
 
--- view : Estimator -> Html msg
--- view est
---   = 
+view : Estimator -> Html msg
+view est
+  = text "TODO"
 
