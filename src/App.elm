@@ -359,11 +359,11 @@ specialties model
   --   , ( Info,    research          )
   --   ]
   = [ interactiveDesign model
-    , systemsArchitecture model
-    , branding model
+    -- , systemsArchitecture model
+    -- , branding model
     , webDevelopment
     , research model
-    , automation model
+    -- , automation model
     ]
 
 learnMore : ButtonModifiers -> Html Msg
@@ -599,22 +599,18 @@ webDevelopment
             ])
         -- TODO: link to github?
        ++ [ content Modifiers.Medium []
-            [ -- blockquote [ style [ "border-color" => "rgba(74,74,74,0.6)", "color" => "#4a4a4a", "background-color" => "rgba(0,0,0,0)" ] ]
-              -- [ text "Is it really "
-              -- , em [] [ text "complex" ]
-              -- , text "? Or did we just make it "
-              -- , em [] [ text "complicated" ]
-              -- , text "?"
-              -- , br [] []
-              -- , br [] []
-              -- , span [ style [ "opacity" => "0.85" ] ] [ text "- Alan Kay" ]
-              -- ]
-              br [] []
-            , p [ style [ "max-width" => "500px" ] ]
-              [ text "Consequatur nihil aut esse. Libero impedit et autem aut dicta dolore at voluptas. Necessitatibus ducimus autem sapiente amet ad repellat animi."
+            [ blockquote [ style [ "border-color" => "rgba(74,74,74,0.6)", "color" => "#4a4a4a", "background-color" => "rgba(0,0,0,0)" ] ]
+              [ text "Is it really "
+              , em [] [ text "complex" ]
+              , text "? Or did we just make it "
+              , em [] [ text "complicated" ]
+              , text "?"
+              , br [] []
+              , br [] []
+              , span [ style [ "opacity" => "0.85" ] ] [ text "- Alan Kay" ]
               ]
             -- , p [ style [ "max-width" => "500px" ] ]
-            --   [ text "Unde ad ad omnis saepe quas. Magni et aut rem cumque voluptatem architecto quia et. Omnis voluptatem autem nihil rerum. Et dignissimos consectetur dolor consequatur rerum minus sit. Aperiam ut optio praesentium accusantium."
+            --   [ text "Consequatur nihil aut esse. Libero impedit et autem aut dicta dolore at voluptas. Necessitatibus ducimus autem sapiente amet ad repellat animi."
             --   ]
             ]
           , br [] []
